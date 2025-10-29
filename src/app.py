@@ -21,24 +21,24 @@ app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
 
 # In-memory activity database
 activities = {
-   "Chess Club": {
-      "description": "Learn strategies and compete in chess tournaments",
-      "schedule": "Fridays, 3:30 PM - 5:00 PM",
-      "max_participants": 12,
-      "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
-   },
-   "Programming Class": {
-      "description": "Learn programming fundamentals and build software projects",
-      "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
-      "max_participants": 20,
-      "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
-   },
-   "Gym Class": {
-      "description": "Physical education and sports activities",
-      "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
-      "max_participants": 30,
-      "participants": ["john@mergington.edu", "olivia@mergington.edu"]
-   },
+    "Chess Club": {
+        "description": "Learn strategies and compete in chess tournaments",
+        "schedule": "Fridays, 3:30 PM - 5:00 PM",
+        "max_participants": 12,
+        "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
+    },
+    "Programming Class": {
+        "description": "Learn programming fundamentals and build software projects",
+        "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
+        "max_participants": 20,
+        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
+    },
+    "Gym Class": {
+        "description": "Physical education and sports activities",
+        "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
+        "max_participants": 30,
+        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
+    },
    "Basketball Team": {
       "description": "Competitive basketball training and games",
       "schedule": "Tuesdays and Thursdays, 4:00 PM - 6:00 PM",
@@ -77,41 +77,6 @@ activities = {
    }
 }
 
-@app.on_event("startup")
-def load_extra_activities():
-    """
-    Merge extra_activities into the in-memory activities dict on startup.
-    This ensures activities defined later in the file are augmented.
-    """
-    global activities
-    try:
-        for name, info in extra_activities.items():
-            if name not in activities:
-                activities[name] = info
-    except NameError:
-        # If activities isn't defined yet (unlikely at startup), initialize it.
-        activities = extra_activities.copy()
-activities = {
-    "Chess Club": {
-        "description": "Learn strategies and compete in chess tournaments",
-        "schedule": "Fridays, 3:30 PM - 5:00 PM",
-        "max_participants": 12,
-        "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
-    },
-    "Programming Class": {
-        "description": "Learn programming fundamentals and build software projects",
-        "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
-        "max_participants": 20,
-        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
-    },
-    "Gym Class": {
-        "description": "Physical education and sports activities",
-        "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
-        "max_participants": 30,
-        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
-    }
-}
-
 
 @app.get("/")
 def root():
@@ -136,6 +101,10 @@ def signup_for_activity(activity_name: str, email: str):
     # Validate student is not already signed up
     if email in activity["participants"]:
         raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+
+    # Validate participant limit
+    if len(activity["participants"]) >= activity["max_participants"]:
+        raise HTTPException(status_code=400, detail="Activity is full")
 
     # Add student
     activity["participants"].append(email)
